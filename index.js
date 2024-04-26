@@ -25,7 +25,7 @@ wss.on('connection', function connection(ws) {
   };
 
   playAiSocket.onmessage = (message) => {
-      console.log('Receiving from Play.AI:', message.data); // Console log from Play.AI
+    console.log('Receiving from Play.AI:', message.data); // Console log from Play.AI
       ws.send(message.data);  // Forwarding to client
   };
 
@@ -36,10 +36,21 @@ wss.on('connection', function connection(ws) {
   playAiSocket.onclose = () => {
       console.log('WebSocket connection with Play.AI closed');
   };
-  
+
+  function sendAudioData(base64Data) {
+    const audioMessage = {
+        type: 'audioIn',
+        data: base64Data
+    };
+    playAiSocket.send(JSON.stringify(audioMessage));
+    console.log('Sent audio data');
+   //console.log(JSON.stringify(audioMessage))
+    
+}
   ws.on('message', function incoming(message) {
-      console.log('Receiving from client:', message); // Console log from client
-      playAiSocket.send(message); // Sending to Play.AI
+    // console.log(message.toString('base64')); // Console log from client
+    baseToString = message.toString('base64')
+      sendAudioData(baseToString); // Sending to Play.AI
   });
   
   ws.on('close', () => {
