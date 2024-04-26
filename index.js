@@ -13,40 +13,41 @@ wss.on('connection', function connection(ws) {
     const playAiSocket = new WebSocket(`wss://api.play.ai/v1/agent-conversation?agentId=${AGENT_ID}`);
 
     playAiSocket.onopen = () => {
-        console.log('Connected to Play.AI');
-        const setupMessage = {
-            type: 'setup',
-            apiKey: API_KEY,
-            enableVad: true,
-            outputFormat: 'mp3',
-            outputSampleRate: 24000,
-        };
-        playAiSocket.send(JSON.stringify(setupMessage));
-    };
+      console.log('Connected to Play.AI');
+      const setupMessage = {
+          type: 'setup',
+          apiKey: API_KEY,
+          enableVad: true, // Ensure VAD is enabled
+          outputFormat: 'mp3', // Ensure output format is as expected
+          outputSampleRate: 24000,
+      };
+      playAiSocket.send(JSON.stringify(setupMessage));
+  };
 
-    playAiSocket.onmessage = (message) => {
-        // Forward Play.AI response to the client
-        ws.send(message.data);
-    };
+  playAiSocket.onmessage = (message) => {
+      console.log('Receiving from Play.AI:', message.data); // Console log from Play.AI
+      ws.send(message.data);  // Forwarding to client
+  };
 
-    playAiSocket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
+  playAiSocket.onerror = (error) => {
+      console.error('WebSocket error from Play.AI:', error);
+  };
 
-    playAiSocket.onclose = () => {
-        console.log('WebSocket connection closed');
-    };
-    
-    ws.on('message', function incoming(message) {
-        // Forward client message to Play.AI
-        playAiSocket.send(message);
-    });
-    
-    ws.on('close', () => {
-        playAiSocket.close();
-    });
+  playAiSocket.onclose = () => {
+      console.log('WebSocket connection with Play.AI closed');
+  };
+  
+  ws.on('message', function incoming(message) {
+      console.log('Receiving from client:', message); // Console log from client
+      playAiSocket.send(message); // Sending to Play.AI
+  });
+  
+  ws.on('close', () => {
+      console.log('WebSocket connection with client closed');
+      playAiSocket.close();
+  });
 });
 
 server.listen(3000, function listening() {
-    console.log('Listening on %d', server.address().port);
+  console.log('Proxy server listening on port', server.address().port);
 });
